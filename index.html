@@ -10,26 +10,27 @@
   <aside class="nav">
     <h1>RSA by hand</h1>
     <ol>
-      <li><a href="#l1">Powers mod n &amp; loops</a></li>
-      <li class="upcoming"><a href="#l2">Modular inverses</a></li>
-      <li class="upcoming"><a href="#l3">Euler's totient φ(n)</a></li>
-      <li class="upcoming"><a href="#l4">Key generation</a></li>
-      <li class="upcoming"><a href="#l5">Encrypt &amp; decrypt</a></li>
-      <li class="upcoming"><a href="#l6">Signatures</a></li>
-      <li class="upcoming"><a href="#l7">Why it's secure</a></li>
+      <li><a href="#l1">Computing powers mod n</a></li>
+      <li><a href="#l2">Loops and tails</a></li>
+      <li class="upcoming"><a href="#l3">Modular inverses</a></li>
+      <li class="upcoming"><a href="#l4">Euler's totient φ(n)</a></li>
+      <li class="upcoming"><a href="#l5">Key generation</a></li>
+      <li class="upcoming"><a href="#l6">Encrypt &amp; decrypt</a></li>
+      <li class="upcoming"><a href="#l7">Signatures</a></li>
+      <li class="upcoming"><a href="#l8">Why it's secure</a></li>
     </ol>
   </aside>
 
   <main>
     <section id="l1" class="lesson">
-      <h2>1 · Powers mod n and loops</h2>
-      <p class="lede">RSA is one operation: m<sup>e</sup> mod n. Everything else is about why
-        doing it twice (once with e, once with d) brings m back.</p>
+      <h2>1 · Computing powers mod n</h2>
+      <p class="lede">RSA is one operation: m<sup>e</sup> mod n, with exponents hundreds of digits long.
+        This lesson is how to compute it without ever touching a big number.</p>
       <ul class="keypoints">
         <li>You may reduce mod n after every multiplication. The answer does not change.</li>
-        <li>Each value is the previous one times a, mod n. Only n remainders exist, so the walk must repeat.</li>
-        <li>If the walk reaches 1, it restarts from the beginning. Exponents then only matter mod the loop length.</li>
-        <li>Exponents of the form (multiple of the loop) + 1 bring you back where you started.</li>
+        <li>One at a time: each step multiplies by a, so the exponent goes up by 1.</li>
+        <li>Square and multiply: split the exponent into powers of 2, build each row by squaring
+          the row above (the exponent doubles), then multiply the rows you picked (exponents add).</li>
       </ul>
 
       <article class="widget" id="w-stepper">
@@ -53,36 +54,70 @@
         </div>
       </article>
 
+      <article class="widget" id="l1-exercises">
+        <h3>Exercises</h3>
+        <ol class="exercises">
+          <li><form data-check="split22">
+            <p>To compute a<sup>22</sup> by square-and-multiply, which squared rows do you multiply?
+              Enter their exponents (powers of 2).</p>
+            <div class="answer">
+              <input type="number" name="p1" aria-label="first power of 2">
+              <input type="number" name="p2" aria-label="second power of 2">
+              <input type="number" name="p3" aria-label="third power of 2">
+              <button>Check</button><output></output>
+            </div>
+          </form></li>
+          <li><form data-check="pow5_13">
+            <p>Compute 5<sup>13</sup> mod 17 by square-and-multiply.</p>
+            <div class="answer">
+              <input type="number" name="value" aria-label="5^13 mod 17">
+              <button>Check</button><output></output>
+            </div>
+          </form></li>
+        </ol>
+      </article>
+    </section>
+
+    <section id="l2" class="lesson">
+      <h2>2 · Loops and tails</h2>
+      <p class="lede">Powers mod n always end up cycling. That cycle is what lets RSA bring m back.</p>
+      <ul class="keypoints">
+        <li>Each value is the previous one times a, mod n. Only n remainders exist, so the walk must repeat.</li>
+        <li>If the walk reaches 1, it restarts from the beginning. Exponents then only matter mod the loop length.</li>
+        <li>Exponents of the form (multiple of the loop) + 1 bring you back where you started.</li>
+        <li>A tail (values never revisited) needs a factor shared between a and n.</li>
+      </ul>
+
       <article class="widget" id="w-cycle">
-        <h3>1b · The walk x, x·a, x·a², … mod n</h3>
+        <h3>2a · The walk x, x·a, x·a², … mod n</h3>
         <p>Start x = 1 for plain powers of a. Orange = tail (never revisited), blue = the loop.
           Try a sharing a factor with n (e.g. a = 2, n = 12) to see a tail appear.</p>
         <div class="controls">
           <label class="ctl"><span>multiplier a</span>
-            <input type="range" id="l1b-a" min="0" max="40" value="3">
-            <input type="number" data-mirror="l1b-a" min="0" max="1000"></label>
+            <input type="range" id="l2a-a" min="0" max="40" value="3">
+            <input type="number" data-mirror="l2a-a" min="0" max="1000"></label>
           <label class="ctl"><span>modulus n</span>
-            <input type="range" id="l1b-n" min="2" max="40" value="7">
-            <input type="number" data-mirror="l1b-n" min="2" max="40"></label>
+            <input type="range" id="l2a-n" min="2" max="40" value="7">
+            <input type="number" data-mirror="l2a-n" min="2" max="40"></label>
           <label class="ctl"><span>start x</span>
-            <input type="range" id="l1b-x" min="0" max="39" value="1">
-            <input type="number" data-mirror="l1b-x" min="0" max="39"></label>
+            <input type="range" id="l2a-x" min="0" max="39" value="1">
+            <input type="number" data-mirror="l2a-x" min="0" max="39"></label>
           <label class="ctl"><span>exponent k</span>
-            <input type="range" id="l1b-k" min="0" max="120" value="100">
-            <input type="number" data-mirror="l1b-k" min="0" max="1000000000"></label>
+            <input type="range" id="l2a-k" min="0" max="120" value="100">
+            <input type="number" data-mirror="l2a-k" min="0" max="1000000000"></label>
         </div>
         <div class="cols">
-          <svg id="l1b-svg" viewBox="0 0 420 420" role="img" aria-label="Walk of x times a to the k mod n"></svg>
+          <svg id="l2a-svg" viewBox="0 0 420 420" role="img" aria-label="Walk of x times a to the k mod n"></svg>
           <div>
-            <div class="chips" id="l1b-chips"></div>
-            <dl class="stats" id="l1b-stats"></dl>
-            <div class="result" id="l1b-explain"></div>
-            <ul class="insights" id="l1b-insights"></ul>
+            <div class="chips" id="l2a-chips"></div>
+            <dl class="stats" id="l2a-stats"></dl>
+            <div class="result" id="l2a-explain"></div>
+            <ul class="insights" id="l2a-insights"></ul>
           </div>
         </div>
       </article>
 
-      <article class="widget" id="w-exercises">
+      <article class="widget" id="l2-exercises">
         <h3>Exercises</h3>
         <ol class="exercises">
           <li><form data-check="loopLength">
@@ -134,52 +169,52 @@
       </article>
 
       <details class="widget" id="w-rsa">
-        <summary><h3>1c · Preview: toy RSA round trip (open after exercise 4)</h3></summary>
+        <summary><h3>2b · Preview: toy RSA round trip (open after exercise 4)</h3></summary>
         <p>Each cell: m → c = m<sup>e</sup> mod n → c<sup>d</sup> mod n. Green means m came back.
           Dashed cells share a factor with n.</p>
         <div class="controls">
           <label class="ctl"><span>modulus n</span>
-            <input type="range" id="l1c-n" min="2" max="60" value="15">
-            <input type="number" data-mirror="l1c-n" min="2" max="60"></label>
+            <input type="range" id="l2b-n" min="2" max="60" value="15">
+            <input type="number" data-mirror="l2b-n" min="2" max="60"></label>
           <label class="ctl"><span>e</span>
-            <input type="range" id="l1c-e" min="1" max="40" value="3">
-            <input type="number" data-mirror="l1c-e" min="1" max="1000"></label>
+            <input type="range" id="l2b-e" min="1" max="40" value="3">
+            <input type="number" data-mirror="l2b-e" min="1" max="1000"></label>
           <label class="ctl"><span>d</span>
-            <input type="range" id="l1c-d" min="1" max="40" value="3">
-            <input type="number" data-mirror="l1c-d" min="1" max="1000"></label>
+            <input type="range" id="l2b-d" min="1" max="40" value="3">
+            <input type="number" data-mirror="l2b-d" min="1" max="1000"></label>
         </div>
-        <div class="result" id="l1c-summary"></div>
-        <div class="grid" id="l1c-grid"></div>
+        <div class="result" id="l2b-summary"></div>
+        <div class="grid" id="l2b-grid"></div>
       </details>
     </section>
 
-    <section id="l2" class="lesson upcoming">
-      <h2>2 · Modular inverses</h2>
-      <p class="lede">What does "d is the inverse of e mod φ(n)" mean, and when does it exist?</p>
-      <p class="soon">Unlocks after lesson 1.</p>
-    </section>
     <section id="l3" class="lesson upcoming">
-      <h2>3 · Euler's totient φ(n)</h2>
+      <h2>3 · Modular inverses</h2>
+      <p class="lede">What does "d is the inverse of e mod φ(n)" mean, and when does it exist?</p>
+      <p class="soon">Unlocks after lesson 2.</p>
+    </section>
+    <section id="l4" class="lesson upcoming">
+      <h2>4 · Euler's totient φ(n)</h2>
       <p class="lede">Why is φ(p·q) = (p−1)(q−1), and why does every loop length divide it?</p>
       <p class="soon">Coming up.</p>
     </section>
-    <section id="l4" class="lesson upcoming">
-      <h2>4 · Key generation</h2>
+    <section id="l5" class="lesson upcoming">
+      <h2>5 · Key generation</h2>
       <p class="lede">Pick p, q, then compute n, φ, e, d.</p>
       <p class="soon">Coming up.</p>
     </section>
-    <section id="l5" class="lesson upcoming">
-      <h2>5 · Encrypt &amp; decrypt</h2>
+    <section id="l6" class="lesson upcoming">
+      <h2>6 · Encrypt &amp; decrypt</h2>
       <p class="lede">Encrypt a number by hand and prove it round-trips.</p>
       <p class="soon">Coming up.</p>
     </section>
-    <section id="l6" class="lesson upcoming">
-      <h2>6 · Signatures</h2>
+    <section id="l7" class="lesson upcoming">
+      <h2>7 · Signatures</h2>
       <p class="lede">Swap the roles of e and d.</p>
       <p class="soon">Coming up.</p>
     </section>
-    <section id="l7" class="lesson upcoming">
-      <h2>7 · Why it's secure</h2>
+    <section id="l8" class="lesson upcoming">
+      <h2>8 · Why it's secure</h2>
       <p class="lede">Factoring is hard, and why toy RSA (no padding, small n) is not secure.</p>
       <p class="soon">Coming up.</p>
     </section>
@@ -187,5 +222,6 @@
 
   <script src="js/common.js"></script>
   <script src="js/lesson1.js"></script>
+  <script src="js/lesson2.js"></script>
 </body>
 </html>
